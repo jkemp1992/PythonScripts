@@ -115,7 +115,7 @@ def getElasticData():
     }
     my_fields = ['Field1', 'Field2']
     data_table = ElasticSearchAPICall(index, query, my_fields)
-    # data_table.to_csv("localgroups.csv")
+    # data_table.to_csv("Example_Data.csv")
 
     # Connection to SQL
     SQL_Server_CN = pyodbc.connect('Driver={SQL Server};'
