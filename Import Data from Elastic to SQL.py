@@ -5,6 +5,8 @@ from elasticsearch import Elasticsearch
 import elasticsearch.helpers
 import json
 import pyodbc
+import os
+import datetime
 
 
 # Function that replaces unwanted characters in a string
@@ -71,6 +73,9 @@ def ElasticSearchAPICall(index_name, query_body, query_fields):
     # count = 0
     # sys.stdout.write(f"Total Records:       {count}")
     # sys.stdout.flush()
+    
+    # Pulls data from servers 10,000 records at a time, scanning for best available server in between
+    # Save data pulled to results variable
     for record in elasticsearch.helpers.scan(es, index=index_name, query=query_body, size=10000):
         results.append(record)
         # count += 1
@@ -104,6 +109,7 @@ def ElasticSearchAPICall(index_name, query_body, query_fields):
 sys.stdout.write("Pulling from Elastic: Example\n")
 
 def getElasticData():
+    # Setup the index, query, and fields needed for Elastic data pull
     index = "example.elastic.index*"
     query = { # Elastic query here
         "query": {
@@ -114,7 +120,14 @@ def getElasticData():
         }
     }
     my_fields = ['Field1', 'Field2']
+    # Call function and save df output to data_table variable
     data_table = ElasticSearchAPICall(index, query, my_fields)
+    
+    # Add month column
+    data_table['month'] = data_table['Field1'].to_numpy().astype('datetime64[M]')
+    data_table.drop(columns='Field1', inplace=True)
+    
+    # Export to csv file
     # data_table.to_csv("Example_Data.csv")
 
     # Connection to SQL
@@ -142,7 +155,7 @@ def getElasticData():
     # Loop through data table
     # Clean each string to prepare for SQL import
     for x in range(0, len(data_table)):
-        Field1 = clean_string(data_table.iloc[x]['Field1'])
+        month = clean_string(data_table.iloc[x]['month'])
         Field2 = clean_string(data_table.iloc[x]['Field2'])
         Field3 = clean_string(data_table.iloc[x]['Field3'])
         Field4 = clean_string(data_table.iloc[x]['Field4'])
@@ -152,7 +165,7 @@ def getElasticData():
         # Start the SQL batch import
         SQLString += f'''
                         EXEC [spi_SQL_Stored_Procedure]
-                        @Field1 = {Field1}, 
+                        @month = {month}, 
                         @Field2 = {Field2}, 
                         @Field3 = {Field3}, 
                         @Field4 = {Field4}, 
