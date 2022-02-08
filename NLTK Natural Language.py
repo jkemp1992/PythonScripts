@@ -5,7 +5,7 @@ from nltk.collocations import *
 import pyodbc
 
 # Script pulls data from SQL Server, loops through a top level group (Main Keyword1), then creates sub-groups (String) and usage frequency
-# Used to classify data
+# Used to classify support ticket data and also server monitoring alert data
 
 # Function that replace unwanted start/end characters in strings
 def clean_string(k: str) -> str:
